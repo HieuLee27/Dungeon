@@ -41,7 +41,7 @@ public static class RandomMap
     }
 
     //Vi tri bat dau hanh lang
-    public static Vector2Int RandomStarttPos(HashSet<Vector2Int> path)
+    public static Vector2Int RandomStarttPos(HashSet<Vector2Int> path) //Chọn vị trí bắt đầu hành lang
     {
         int randomItem = UnityEngine.Random.Range(0, path.Count);
         Vector2Int startCorridor = new();
@@ -66,6 +66,32 @@ public static class RandomMap
         }
         return startCorridor;
     }
+
+    public static (List<Vector2Int>, List<Vector2Int>) MapFightingWithBoss(int width, int height) //Map đánh boss
+    {
+        List<Vector2Int> listPos = new();
+        List<Vector2Int> listBounder = new();
+        for (int x = -width; x < width; x++)
+        {
+            for (int y = -height; y < height; y++)
+            {
+                listPos.Add(new Vector2Int(x, y));
+            }
+        }
+
+        for (int x = -width -1; x < width + 1; x++)
+        {
+            for (int y = -height - 1; y < height + 1; y++)
+            {
+                if(!listPos.Contains(new Vector2Int(x, y)))
+                {
+                    listBounder.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+
+        return (listPos, listBounder);
+    }
 }
 public static class Direction2D
 {
@@ -88,8 +114,6 @@ public static class Direction2D
         new Vector2Int(-1, -1),
         new Vector2Int(1, -1)
     };
-
-
 
     public static Vector2Int RandomDic()
     {

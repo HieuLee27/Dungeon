@@ -10,6 +10,8 @@ public class Paint : MonoBehaviour
     public TileBase tileBase, tileBouder;
     public int walkLength, corridorLength, countOfDungeon;
     public HashSet<Vector2Int> mapPos;
+    public int widght, height;
+    [SerializeField] private GameObject managerGame;
 
     private void Awake()
     {
@@ -22,6 +24,11 @@ public class Paint : MonoBehaviour
         mapPos = path.Item1;
         PaintFloorTiles(path.Item1);
         PaintBouder(path.Item2);
+    }
+
+    private void Update()
+    {
+        PainMapFightingWithBoss();
     }
 
     private void PaintSingleTile(Vector2Int position, Tilemap tilemap, TileBase tile)
@@ -49,5 +56,20 @@ public class Paint : MonoBehaviour
     {
         tilemapBouder.ClearAllTiles();
         PaintTiles(bouderPos, tilemapBouder, tileBouder);
+    }
+
+    public void PainMapFightingWithBoss()
+    {
+        var mode = managerGame.GetComponent<ManagerGame>().mode;
+        if (mode == ManagerGame.ModeGame.FightingWithBoss)
+        {
+            tilemap.ClearAllTiles();
+            tilemapBouder.ClearAllTiles();
+            List<Vector2Int> listPos = RandomMap.MapFightingWithBoss(widght, height).Item1;
+            HashSet<Vector2Int> pathGrid = new HashSet<Vector2Int>(listPos);
+            HashSet<Vector2Int> pathBounder = new HashSet<Vector2Int>(RandomMap.MapFightingWithBoss(widght, height).Item2);
+            PaintTiles(pathGrid, tilemap, tileBase);
+            PaintTiles(pathBounder, tilemapBouder, tileBouder);
+        }  
     }
 }

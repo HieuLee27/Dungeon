@@ -1,51 +1,94 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using TMPro.EditorUtilities;
 using Unity.PlasticSCM.Editor.WebApi;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class AI_Enemy : MonoBehaviour
+public class AI_Enemy : Game_Object
 {
-    private Rigidbody2D rb;
-    private GameObject player;
-    protected bool isCollision = false;
+    private float distanceWithPlayer;
+    [SerializeField] private float areaDetect;
+    private bool isCompleted = true;
+    [SerializeField] private GameObject manaFood;
+    private GameObject target;
 
-    [SerializeField] private float areaDetect, speed;
-
-    private void Awake()
+    protected override void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        player = GameObject.Find("Player");
+        base.Awake();
+        isCompleted = true;
+        target = GameObject.FindWithTag(enemy.tag);
     }
 
-    private void LateUpdate()
+    private void Update()
     {
-        if (player != null)
+        distanceWithPlayer = GetDistance.GetDistanceBetween(target.transform.position, transform.position);
+        Death();
+        if (isLive && isCompleted)
         {
-            FollowPlayer(player.transform.position);
+            FollowPlayer();
         }
     }
 
-    void OnCollisionEnter2D(Collision2D collision) //Kiểm tra va chạm với Player
+    IEnumerator WalkAround()
     {
-        if (collision.gameObject.CompareTag("Player"))
+        if(rb.velocity == Vector2.zero) 
         {
-            isCollision = true;
+            isCompleted = false;
+
+            directionMoving = GetDistance.GetRandomDirection();
+            rb.velocity = directionMoving * (speedMoving - 0.1f) * Time.deltaTime * 20;
+
+            yield return new WaitForSeconds(Random.Range(2, 3));
+
+            rb.velocity = Vector2.zero;
+
+            isCompleted = true;
         }
     }
 
-    private void FollowPlayer(Vector2 playerPos) //Kẻ thù đuổi theo player khi khoảng cách giữa chúng nằm trong phạm vi có thể phát hiện
+    private void FollowPlayer() //Kẻ thù đuổi theo player khi khoảng cách giữa chúng nằm trong phạm vi có thể phát hiện
     {
-        float distance = GetDistance.GetDistanceBetween(playerPos, this.gameObject.transform.position);
-
-        if (distance <= areaDetect)
+        if(distanceWithPlayer <= areaDetect)
         {
-            Vector2 directionMoving = GetDistance.GetDirection(this.gameObject.transform.position, player.transform.position);
-            rb.velocity = directionMoving * speed;
+            directionMoving = GetDistance.GetDirection(transform.position, target.transform.position);
+            rb.velocity = directionMoving * speedMoving * Time.deltaTime * 20;
         }
         else
         {
             rb.velocity = Vector2.zero;
+            StartCoroutine(WalkAround());
+        }
+    }
+
+
+    protected override void OnTriggerEnter2D(Collider2D collision)
+    {
+        base.OnTriggerEnter2D (collision);
+    }
+
+    protected override void OnCollisionStay2D(Collision2D collision)
+    {
+        base.OnCollisionStay2D (collision);
+    }
+
+    private void Death()
+    {
+        if (!isLive)
+        {
+            GetComponent<Collider2D>().isTrigger = true;
+            Instantiate(manaFood, transform.position, transform.rotation);
+            Destroy(gameObject);
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(!collision.gameObject.CompareTag(enemy.tag))
+        {
+            isCompleted = true;
         }
     }
 }

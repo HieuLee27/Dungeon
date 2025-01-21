@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -26,19 +27,15 @@ public static class GetDistance
         return directionJoystick;
     }
 
-    public static Vector2 SelectNearestEnemy(Dictionary<Vector2, float> enemyInArea, Vector2 playerPos) //Chọn kẻ thù gần nhất với player
+    public static Vector2 GetRandomDirection()
     {
-        Vector2 direction = new Vector2();
-        float minDistance = 3f;
-        foreach (var enemy in enemyInArea)
-        {
-            if (enemy.Value < minDistance)
-            {
-                minDistance = enemy.Value;
-                direction = GetDirection(enemy.Key, playerPos);
-            }
-        }
-
-        return direction;
+    RandomX:
+        float x = (float)Math.Round(UnityEngine.Random.Range(-0.9f, 0.9f), 1);
+        if (x == 0.0f) goto RandomX;
+    RandomY:
+        float y = (float)Math.Round(UnityEngine.Random.Range(-0.9f, 0.9f), 1);
+        if (y == 0.0f) goto RandomY;
+        Vector2 randomDirection = new Vector2(x, y);
+        return randomDirection;
     }
 }

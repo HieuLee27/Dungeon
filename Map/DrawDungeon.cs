@@ -1,11 +1,11 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public static class DrawDungeon
 {
-    public static (HashSet<Vector2Int>, HashSet<Vector2Int>) CreateListDungeon(Vector2Int startPos, int walkLength, int corridorLength, int countOfDungeon)
+    public static (HashSet<Vector2Int>, HashSet<Vector2Int>) CreateListDungeon(Vector2Int startPos, int walkLength, int corridorLength, int countOfDungeon) //Tạo danh sách vị trí hành lang và biên
     {
         var path = RandomCordidor.MapAddCorridor(corridorLength, startPos, walkLength);
         HashSet<Vector2Int> pathDungeon = new();
