@@ -4,13 +4,14 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
 
 public class ControllerPlayer : Game_Object
 {
     //Di chuyển
     private GameObject joystickObject;
     private Joystick joystick;
-    
+
 
     //Attack
     public GameObject bullet, superBullet, specialBullet;
@@ -26,22 +27,40 @@ public class ControllerPlayer : Game_Object
     [SerializeField] private Slider levelbar;
     [SerializeField] private TMP_Text textLevel;
 
+    private bool isResetingPos;
+    public GameObject gameManager;
+
     protected override void Awake()
     {
         base.Awake();
         joystickObject = GameObject.FindWithTag("Joystick");
         joystick = joystickObject.GetComponent<Joystick>();
+        isResetingPos = false;
     }
 
     private void LateUpdate()
     {
         Moving();
         FlipDirection();
+        if (!isResetingPos)
+        {
+            ResetingPos();
+        }
+        Death();
+    }
+
+    private void ResetingPos()
+    {
+        if (gameManager.GetComponent<ManagerGame>().mode == ManagerGame.ModeGame.FightingWithBoss)
+        {
+            transform.position = new Vector3(0, -4f, 0);
+            isResetingPos = true;
+        }
     }
 
     private void Moving() //Di chuyển nhân vật theo Joystick
     {
-        if(joystick.Direction.y != 0)
+        if (joystick.Direction.y != 0)
         {
             anim.SetBool("Run", true);
             anim.SetBool("Idle", false);
@@ -124,14 +143,21 @@ public class ControllerPlayer : Game_Object
 
     private IEnumerator NormalAttack(GameObject typeBullet)
     {
-        Bullet bulletComponent = Instantiate(typeBullet, transform.position, transform.rotation).GetComponent<Bullet>();
+        GameObject bulletInstance = Instantiate(typeBullet, transform.position, transform.rotation);
+        Bullet bulletComponent = bulletInstance.GetComponent<Bullet>();
         if (isEnemyInRange && target1 != null)
         {
+            Vector2 direction = GetDistance.GetDirection(this.gameObject.transform.position, target1.transform.position).normalized;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            bulletInstance.transform.eulerAngles = new Vector3(0, 0, angle);
             bulletComponent.GetComponent<Bullet>().DirectionBullet(target1.transform.position);
         }
         else
         {
             bulletComponent.GetComponent<Bullet>().RandomDirectionBullet();
+            Vector2 direc = bulletComponent.direction.normalized;
+            float angleRandom = Mathf.Atan2(direc.y, direc.x) * Mathf.Rad2Deg;
+            bulletInstance.transform.rotation = Quaternion.Euler(0, 0, angleRandom);
         }
         yield return new WaitForSeconds(timeCooldownAttack);
     }
@@ -180,15 +206,25 @@ public class ControllerPlayer : Game_Object
 
     protected override void OnCollisionStay2D(Collision2D collision)
     {
-        base.OnCollisionStay2D (collision);
+        base.OnCollisionStay2D(collision);
     }
 
     protected override void OnTriggerEnter2D(Collider2D collision)
     {
         
+            if (collision.gameObject.CompareTag("EnemyBullet"))
+            {
+                Collider2D col1 = transform.Find("Interface").GetComponent<Collider2D>();
+                Collider2D col2 = GameObject.FindWithTag("EnemyBullet").GetComponent<Collider2D>();
+                if (col1.IsTouching(col2))
+                {
+                    damage = collision.gameObject.GetComponent<Bullet>().physicalDamage + collision.gameObject.GetComponent<Bullet>().magicalDamage;
+                    DecreaseBlood();
+                }
+            }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnCollisionEnter2D(Collision2D collision) //Tăng cấp nhân vật
     {
         //Tăng cấp nhân vật
         if (collision.gameObject.CompareTag("ManaFood"))
@@ -200,6 +236,15 @@ public class ControllerPlayer : Game_Object
             levelbar.value = 0;
             textLevel.text = (int.Parse(textLevel.text) + 1).ToString();
             blood = bloodDefault;
+        }
+    }
+
+    private void Death()
+    {
+        if (!isLive)
+        {
+            GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
+            GetComponent<ControllerPlayer>().enabled = false;
         }
     }
 }

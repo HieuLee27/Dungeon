@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using TMPro.EditorUtilities;
-using Unity.PlasticSCM.Editor.WebApi;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -15,6 +13,8 @@ public class AI_Enemy : Game_Object
     [SerializeField] private GameObject manaFood;
     private GameObject target;
 
+    private SpriteRenderer enemySprite;
+
     protected override void Awake()
     {
         base.Awake();
@@ -22,14 +22,21 @@ public class AI_Enemy : Game_Object
         target = GameObject.FindWithTag(enemy.tag);
     }
 
+    private void Start()
+    {
+        enemySprite = transform.Find("Interface").GetComponent<SpriteRenderer>();
+    }
+
     private void Update()
     {
         distanceWithPlayer = GetDistance.GetDistanceBetween(target.transform.position, transform.position);
-        Death();
+        StartCoroutine(Death());
         if (isLive && isCompleted)
         {
             FollowPlayer();
         }
+
+        FlipSprite();
     }
 
     IEnumerator WalkAround()
@@ -72,14 +79,25 @@ public class AI_Enemy : Game_Object
     protected override void OnCollisionStay2D(Collision2D collision)
     {
         base.OnCollisionStay2D (collision);
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            anim.SetBool("Attack", true);
+        }
     }
 
-    private void Death()
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        anim.SetBool("Attack", false);
+    }
+
+    IEnumerator Death()
     {
         if (!isLive)
         {
             GetComponent<Collider2D>().isTrigger = true;
-            Instantiate(manaFood, transform.position, transform.rotation);
+            anim.SetTrigger("Die");
+
+            yield return new WaitForSeconds(2f);
             Destroy(gameObject);
         }
     }
@@ -89,6 +107,18 @@ public class AI_Enemy : Game_Object
         if(!collision.gameObject.CompareTag(enemy.tag))
         {
             isCompleted = true;
+        }
+    }
+
+    private void FlipSprite()
+    {
+        if (rb.velocity.x > 0)
+        {
+            enemySprite.flipX = false;
+        }
+        else if (rb.velocity.x < 0)
+        {
+            enemySprite.flipX = true;
         }
     }
 }

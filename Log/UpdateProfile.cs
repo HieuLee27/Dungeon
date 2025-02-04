@@ -19,7 +19,7 @@ public class UpdateProfile : MonoBehaviour
     {
         if (namePlayer.text == "")
         {
-            Debug.Log("Name is null");
+
         }
         else
         {
@@ -30,7 +30,6 @@ public class UpdateProfile : MonoBehaviour
 
             if (taskUpdate.Exception != null)
             {
-                Debug.Log(taskUpdate.Exception);
 
                 FirebaseException firebaseException = taskUpdate.Exception.GetBaseException() as FirebaseException;
                 AuthError authError = (AuthError)firebaseException.ErrorCode;
@@ -54,12 +53,9 @@ public class UpdateProfile : MonoBehaviour
                         failsMessage = "Update is fails";
                         break;
                 }
-
-                Debug.Log(failsMessage);
             }
             else
             {
-                Debug.Log("Update is Successful");
                 LoadScene.Instance.ContinueLogin();
             } 
         }

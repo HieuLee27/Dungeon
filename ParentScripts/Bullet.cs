@@ -46,12 +46,4 @@ public class Bullet : MonoBehaviour
         direction = GetDistance.GetRandomDirection();
         rb.velocity = direction * speedBullet;
     }
-
-    //private void OnCollisionEnter2D(Collision2D collision)
-    //{
-    //    if (collision.gameObject.CompareTag(enemy.tag) || collision.gameObject.CompareTag("Bouder"))
-    //    {
-    //        Destroy(gameObject);
-    //    }
-    //}
 }

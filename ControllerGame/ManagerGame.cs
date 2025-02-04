@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine.Tilemaps;
 using Unity.VisualScripting;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 public class ManagerGame : MonoBehaviour
 {
@@ -16,7 +17,6 @@ public class ManagerGame : MonoBehaviour
 
     //Đối tượng game
     private GameObject player;
-    private GameObject boss;
     private List<GameObject> objList;
 
     //Điều kiện
@@ -25,21 +25,26 @@ public class ManagerGame : MonoBehaviour
 
     //Trạng thái game
     private StateGame state;
-    private ResultGame result;
 
     private float timeCooldown = 2f;
+
+    [Header("UI")]
+    public GameObject panelChangeScene;
+    private bool isChangeScene = false;
+
+    [SerializeField] private GameObject panelResult;
+    public TMP_Text textResult;
 
     private void Awake()
     {
         player = GameObject.FindGameObjectWithTag("Player");
-        boss = GameObject.FindGameObjectWithTag("Boss");
         List<GameObject> objList = new();
-        mode = ModeGame.FightingWithEnemy;
         state = StateGame.Playing;
     }
 
     private void Start()
     {
+        mode = ModeGame.FightingWithEnemy;
         StartCoroutine(StartGame());
     }
 
@@ -50,12 +55,17 @@ public class ManagerGame : MonoBehaviour
         EnableScripts();
         if (Time.time >= timeCooldown)
         {
-            Debug.LogFormat("Enemy: {0}", enemyCounter.Length);
-            Debug.LogFormat("ListObject = {0}", objList.Count);
-            Debug.LogFormat("Mode : {0}", mode);
             timeCooldown = Time.time + 2f;
         }
         ChangeMode();
+
+        if(isChangeScene == true)
+        {
+            panelChangeScene.SetActive(true);
+            ChangeModeScene();
+            isChangeScene = false;
+        }
+        StartCoroutine(ShowResult());
     }
 
     public enum StateGame
@@ -159,40 +169,55 @@ public class ManagerGame : MonoBehaviour
     IEnumerator StartGame() //Bắt đầu game
     {
         state = StateGame.Pause;
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
 
         state = StateGame.Playing;
-    }
-
-    private void GameResult() //Kết quả game
-    {
-        if (player.GetComponent<ControllerPlayer>().isLive == false)
-        {
-            result = ResultGame.Lose;
-        }
-        else if (boss.GetComponent<AI_Boss1>().isLive == false)
-        {
-            result = ResultGame.Win;
-        }
+        
     }
 
     private void ChangeMode() //Thay đổi chế độ game
     {
-        if (enemyCounter.Length == 0)
+        if (Time.timeSinceLevelLoad > 3f)
         {
-            if(Time.time > 0.4f)
+            if(enemyCounter.Length == 0)
             {
                 mode = ModeGame.FightingWithBoss;
             }
         }
     }
 
-    private void SetPosPlayer() //Đặt lại vị trí Player
+    //UI thay đổi chế độ chơi
+    private void ChangeModeScene()
     {
-        if(mode == ModeGame.FightingWithBoss)
+        Animator animator = panelChangeScene.GetComponent<Animator>();
+        animator.SetBool("out", true);
+        panelChangeScene.SetActive(false);
+        isChangeScene = true;
+    }
+
+    IEnumerator ShowResult() //Kết quả game
+    {
+        GameObject player = GameObject.FindWithTag("Player");
+        bool isLive = player.GetComponent<ControllerPlayer>().isLive;
+        if (isLive == false)
         {
-            player.transform.position = new Vector2(0.5f, 0.5f);
+            mode = ModeGame.FightingWithEnemy;
+            textResult.text = "YOU LOSE";
+            SetStatePause();
+            panelResult.SetActive(true);
         }
-        mode = ModeGame.FightingWithEnemy;
+        else if(mode == ModeGame.FightingWithBoss)
+        {
+            yield return new WaitForSeconds(1f);
+            bool isLiveBoss = GameObject.FindGameObjectWithTag("Boss").GetComponent<AI_Boss1>().isLive;
+            if (isLiveBoss == false)
+            {
+                textResult.text = "YOU WIN";
+                SetStatePause();
+                yield return new WaitForSeconds(1f);
+                panelResult.SetActive(true);
+            }
+        }
+        
     }
 }

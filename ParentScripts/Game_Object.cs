@@ -18,7 +18,7 @@ public class Game_Object : MonoBehaviour
     [SerializeField] protected float physicalAttack;
     [SerializeField] protected float magicalAttack;
     internal bool isLive;
-    [SerializeField] protected elementalType type;
+    [SerializeField] protected ElementalType type;
 
     //Đối tượng gây sát thương
     [SerializeField] protected GameObject enemy;
@@ -26,7 +26,7 @@ public class Game_Object : MonoBehaviour
     protected bool isEnemyInRange;
 
     //Giảm máu
-    private float damage;
+    protected float damage;
     protected Transform blood;
     protected Transform bloodDefault;
     protected Vector3 currentBlood;
@@ -46,7 +46,7 @@ public class Game_Object : MonoBehaviour
         isLive = true;
     }
 
-    protected enum elementalType
+    protected enum ElementalType
     {
         physical,
         magical,
@@ -63,15 +63,15 @@ public class Game_Object : MonoBehaviour
                 damage = collision.gameObject.GetComponent<AI_Enemy>().physicalAttack + collision.gameObject.GetComponent<AI_Enemy>().magicalAttack;
                 DecreaseBlood();
             }
-            else if(enemyTag == "Boss")
-            {
-                damage = collision.gameObject.GetComponent<AI_Boss1>().physicalAttack + collision.gameObject.GetComponent<AI_Enemy>().magicalAttack;
-                DecreaseBlood();
-            }
             else if(enemyTag == "Player")
             {
                 damage = 0;
             }
+        }
+        else if (collision.gameObject.CompareTag("Boss") && gameObject.tag == "Player")
+        {
+            damage = collision.gameObject.GetComponent<AI_Boss1>().physicalAttack + collision.gameObject.GetComponent<AI_Boss1>().magicalAttack;
+            DecreaseBlood();
         }
     }
 
@@ -90,7 +90,7 @@ public class Game_Object : MonoBehaviour
 
     protected void DecreaseBlood()
     {
-        if (blood.localScale.x <= 0.15f) //Đối tượng biến mất khi hết máu
+        if (blood.localScale.x <= 0.05f)
         {
             damage = 0;
             isLive = false;
@@ -118,7 +118,7 @@ public class Game_Object : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if(collision.gameObject.CompareTag(enemyBullet.tag))
+        if(collision.gameObject.CompareTag(enemy.tag))
         {
             DecreaseBlood();
         }

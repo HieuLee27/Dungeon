@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Tilemaps;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -63,13 +62,16 @@ public class Paint : MonoBehaviour
         var mode = managerGame.GetComponent<ManagerGame>().mode;
         if (mode == ManagerGame.ModeGame.FightingWithBoss)
         {
-            tilemap.ClearAllTiles();
-            tilemapBouder.ClearAllTiles();
-            List<Vector2Int> listPos = RandomMap.MapFightingWithBoss(widght, height).Item1;
-            HashSet<Vector2Int> pathGrid = new HashSet<Vector2Int>(listPos);
-            HashSet<Vector2Int> pathBounder = new HashSet<Vector2Int>(RandomMap.MapFightingWithBoss(widght, height).Item2);
-            PaintTiles(pathGrid, tilemap, tileBase);
-            PaintTiles(pathBounder, tilemapBouder, tileBouder);
+            if(Time.time >= 1.3f)
+            {
+                tilemap.ClearAllTiles();
+                tilemapBouder.ClearAllTiles();
+                List<Vector2Int> listPos = RandomMap.MapFightingWithBoss(widght, height).Item1;
+                HashSet<Vector2Int> pathGrid = new (listPos);
+                HashSet<Vector2Int> pathBounder = new(RandomMap.MapFightingWithBoss(widght, height).Item2);
+                PaintTiles(pathGrid, tilemap, tileBase);
+                PaintTiles(pathBounder, tilemapBouder, tileBouder);
+            }
         }  
     }
 }

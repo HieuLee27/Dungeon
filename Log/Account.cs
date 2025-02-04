@@ -1,13 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor.UI;
 using TMPro;
 using UnityEngine.UI;
 using System.Xml.Serialization;
 using Firebase;
 using Firebase.Auth;
-using Unity.Notifications.iOS;
 using System.Data;
 using System.Threading.Tasks;
 using UnityEngine.SceneManagement;
@@ -51,7 +49,6 @@ public class Account : MonoBehaviour
             }
             else
             {
-                Debug.Log("Denpendencies unavailable with state : " + status);
             }
         });
 
@@ -65,14 +62,12 @@ public class Account : MonoBehaviour
             bool signedIn = user != auth.CurrentUser && auth.CurrentUser != null;
             if (!signedIn &&  user != null)
             {
-                Debug.Log("signed out " + user.UserId);
             }
 
             user = auth.CurrentUser;
 
             if(signedIn)
             {
-                Debug.Log("signed in " + user.UserId);
                 
             }
         }
@@ -98,7 +93,6 @@ public class Account : MonoBehaviour
 
         if(loginTask.Exception != null)
         {
-            Debug.Log("Error : " +  loginTask.Exception);
             
             FirebaseException firebaseException = loginTask.Exception.GetBaseException() as FirebaseException;
             AuthError authError = (AuthError) firebaseException.ErrorCode;
@@ -123,14 +117,10 @@ public class Account : MonoBehaviour
                     errorMessage = "Login failed";
                     break;
             }
-
-            Debug.Log(errorMessage);
         }
         else
         {
             user = loginTask.Result.User;
-
-            Debug.LogFormat("{0} You are successfully log in", user.DisplayName);
 
             SceneManager.LoadSceneAsync(1);
         }
@@ -144,15 +134,15 @@ public class Account : MonoBehaviour
     {
         if (email == "")
         {
-            Debug.LogError("Email field is empty");
+
         }
         else if (password == null)
         {
-            Debug.LogError("Password is empty");
+
         }
         else if (password != confirmPassword)
         {
-            Debug.LogError("Password is not match");
+
         }
         else
         {
@@ -162,7 +152,6 @@ public class Account : MonoBehaviour
 
             if (signUpTask.Exception != null)
             {
-                Debug.Log(signUpTask.Exception);
 
                 FirebaseException firebaseException = signUpTask.Exception.GetBaseException() as FirebaseException;
                 AuthError authError = (AuthError)firebaseException.ErrorCode;
@@ -187,13 +176,10 @@ public class Account : MonoBehaviour
                         failSignUpMessage = "Sign Up fail";
                         break;
                 }
-
-                Debug.LogError(failSignUpMessage);
             }
             else
             {
                 user = signUpTask.Result.User;
-                Debug.Log("Successfully");
                 PanelLogOnAndOff.Instance.ClosePanel();
             }
         }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
 
 public class SpawnObject : MonoBehaviour
 {
@@ -11,6 +10,7 @@ public class SpawnObject : MonoBehaviour
     public Tilemap mapPos;
     private HashSet<Vector2Int> path;
     [SerializeField] private GameObject enemy;
+    private GameObject singleton;
     private GameObject player;
 
     [Header("Enemy count")]
@@ -22,6 +22,9 @@ public class SpawnObject : MonoBehaviour
     [Header("Boss")]
     [SerializeField] private GameObject boss;
     [SerializeField] private GameObject managerGame;
+
+    [Header("ManagerGame")]
+    public GameObject gameManager;
 
     private void Awake()
     {
@@ -37,7 +40,7 @@ public class SpawnObject : MonoBehaviour
 
     private void Update()
     {
-        if (listEnemy.Count == 0)
+        if (gameManager.GetComponent<ManagerGame>().mode == ManagerGame.ModeGame.FightingWithBoss && Time.time > 1.2f)
         {
             SpawnBoss();
         }
@@ -77,11 +80,11 @@ public class SpawnObject : MonoBehaviour
         paintScript = map.GetComponent<Paint>();
         if (paintScript != null)
         {
-            Debug.Log("script not null");
+
         }
         else
         {
-            Debug.Log("Script is null");
+
         }
 
         path = paintScript.mapPos;
@@ -92,12 +95,9 @@ public class SpawnObject : MonoBehaviour
 
     private void SpawnBoss()
     {
-        if(Time.time > 1.1f)
+        if (singleton == null)
         {
-            if (managerGame.GetComponent<ManagerGame>().mode == ManagerGame.ModeGame.FightingWithBoss)
-            {
-                Instantiate(boss, boss.transform.position, boss.transform.rotation);
-            }
+            singleton = Instantiate(boss, new Vector2(0, 4f), boss.transform.rotation);
         }
     }
 }
